@@ -63,7 +63,7 @@ Create Ingress resource for a Kong service
 {{- $servicePort := include "kong.ingress.servicePort" . }}
 {{- $path := .ingress.path -}}
 {{- $hostname := .ingress.hostname -}}
-apiVersion: extensions/v1beta1
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: {{ .fullName }}-{{ .serviceName }}
@@ -81,10 +81,13 @@ spec:
   - host: {{ $hostname }}
     http:
       paths:
-        - path: {{ $path }}
+        - pathType: Prefix
+          path: {{ $path }}
           backend:
-            serviceName: {{ .fullName }}-{{ .serviceName }}
-            servicePort: {{ $servicePort }}
+            service:
+              name: {{ .fullName }}-{{ .serviceName }}
+              port:
+                number: {{ $servicePort }}
   {{- if (hasKey .ingress "tls") }}
   tls:
   - hosts:
